@@ -1,5 +1,5 @@
 use crossterm::{
-    event::{self, poll, Event, KeyCode},
+    event::{self, poll, Event, KeyCode, KeyModifiers},
     terminal,
 };
 use std::{error, process, time::Duration};
@@ -11,20 +11,25 @@ fn main() -> Result<(), Box<dyn error::Error>> {
     let mut count = 0;
     loop {
         count += 1;
-        if let Ok(true) = poll(Duration::from_millis(100)) {
-            match event::read() {
-                Ok(Event::Key(ke)) => {
-                    // NOTE: println的换行会失效, ctrl + c也会失效
-                    print!("{count} - {e:?}\r\n", count = count, e = ke);
-                    if ke.code == KeyCode::Char('q') {
-                        break;
+
+        match poll(Duration::from_millis(100)) {
+            Ok(true) => {
+                match event::read() {
+                    Ok(Event::Key(ke)) => {
+                        // NOTE: println的换行会失效, ctrl + c也会失效
+                        print!("{count} - {e:?}\r\n", count = count, e = ke);
+                        if ke.code == KeyCode::Char('q')
+                            && ke.modifiers.contains(KeyModifiers::CONTROL)
+                        {
+                            break;
+                        }
                     }
+                    Err(_) => die("read failed!"),
+                    _ => {}
                 }
-                Err(_) => die("read failed!"),
-                _ => {}
             }
-        } else {
-            die("poll failed!");
+            Ok(false) => {}
+            _ => die("poll failed!"), // TODO: 什么情况才会发生?
         }
     }
 
@@ -37,23 +42,3 @@ fn die<S: Into<String>>(s: S) {
     print!("{} - {}\r\n", s.into(), errno());
     process::exit(1);
 }
-
-// match poll(Duration::from_millis(100)) {
-//     Ok(true) => {
-//         match event::read() {
-//             Ok(Event::Key(ke)) => {
-//                 // NOTE: println的换行会失效, ctrl + c也会失效
-//                 print!("{count} - {e:?}\r\n", count = count, e = ke);
-//                 if ke.code == KeyCode::Char('q') {
-//                     break;
-//                 }
-//             }
-//             Err(_) => die("read failed!"),
-//             _ => {}
-//         }
-//     }
-//     Err(_) => die("poll failed!"),
-//     _ => {
-//         print!("do nothing\r\n")
-//     }
-// }
