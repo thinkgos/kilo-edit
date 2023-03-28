@@ -1,6 +1,7 @@
-use kilo_edit::process_key;
+use kilo_edit::editor::Editor;
 
 fn main() -> Result<(), anyhow::Error> {
-    let result = process_key();
+    let mut editor = Editor::new()?;
+    let result = editor.process();
     result
 }
