@@ -21,6 +21,7 @@ impl Editor {
     pub fn refresh_screen(&mut self) -> Result<(), anyhow::Error> {
         self.screen.clear()?;
         self.screen.draw_row()?;
+        self.screen.flush()?;
         Ok(())
     }
     pub fn process(&mut self) -> Result<(), anyhow::Error> {
@@ -38,7 +39,12 @@ impl Editor {
 
 impl Drop for Editor {
     fn drop(&mut self) {
-        self.screen.clear().expect("clear screen failed");
-        terminal::disable_raw_mode().expect("disable raw mode failed");
+        let mut cleanup = || -> Result<(), anyhow::Error> {
+            self.screen.clear()?;
+            self.screen.flush()?;
+            terminal::disable_raw_mode()?;
+            Ok(())
+        };
+        cleanup().expect("editor: drop clear failed");
     }
 }

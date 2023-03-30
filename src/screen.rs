@@ -20,18 +20,25 @@ impl Screen {
     pub fn clear(&mut self) -> Result<(), anyhow::Error> {
         self.stdout
             .queue(terminal::Clear(terminal::ClearType::All))?
-            .queue(cursor::MoveTo(0, 0))?
-            .flush()?;
+            .queue(cursor::MoveTo(0, 0))?;
         Ok(())
     }
-
     pub fn draw_row(&mut self) -> Result<(), anyhow::Error> {
         for row in 0..self.height {
             self.stdout
                 .queue(cursor::MoveTo(0, row))?
                 .queue(Print("~"))?;
         }
+        self.stdout.queue(cursor::MoveTo(0, 0))?;
+        Ok(())
+    }
+    pub fn flush(&mut self) -> Result<(), anyhow::Error> {
         self.stdout.flush()?;
         Ok(())
     }
+    // pub fn cursor_position(&mut self) -> Result<(u16, u16), anyhow::Error> {
+    //     let position = cursor::position()?;
+    //     // TODO: use reexport cursor ?
+    //     Ok(position)
+    // }
 }
