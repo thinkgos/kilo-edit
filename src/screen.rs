@@ -1,6 +1,18 @@
 use std::io::{self, Write};
 
-use crossterm::{cursor, style::Print, terminal, QueueableCommand};
+use crossterm::{
+    cursor::{self, MoveTo},
+    style::Print,
+    terminal, QueueableCommand,
+};
+
+use crate::VERSION;
+
+#[derive(Debug, Default)]
+pub struct CursorPosition {
+    pub x: u16,
+    pub y: u16,
+}
 
 pub struct Screen {
     pub width: u16,
@@ -23,22 +35,50 @@ impl Screen {
             .queue(cursor::MoveTo(0, 0))?;
         Ok(())
     }
+
     pub fn draw_row(&mut self) -> Result<(), anyhow::Error> {
+        let welcome = &|| -> String {
+            let mut welcome = format!("Kilo editor -- version {}", VERSION);
+            welcome.truncate(self.width as usize);
+            welcome
+        }();
+
         for row in 0..self.height {
             self.stdout
                 .queue(cursor::MoveTo(0, row))?
                 .queue(Print("~"))?;
+
+            if row == self.height / 3 {
+                // 输出欢迎
+                let column = if welcome.len() < self.width as usize {
+                    ((self.width as usize - welcome.len()) / 2) as u16
+                } else {
+                    0
+                };
+                self.stdout
+                    .queue(MoveTo(column, row))?
+                    .queue(Print(welcome))?;
+            }
         }
         self.stdout.queue(cursor::MoveTo(0, 0))?;
         Ok(())
     }
+
     pub fn flush(&mut self) -> Result<(), anyhow::Error> {
         self.stdout.flush()?;
         Ok(())
     }
-    // pub fn cursor_position(&mut self) -> Result<(u16, u16), anyhow::Error> {
-    //     let position = cursor::position()?;
-    //     // TODO: use reexport cursor ?
-    //     Ok(position)
-    // }
+
+    pub fn get_cursor(&mut self) -> Result<CursorPosition, anyhow::Error> {
+        let position = cursor::position()?;
+        Ok(CursorPosition {
+            x: position.0,
+            y: position.1,
+        })
+    }
+
+    pub fn move_cursor(&mut self, p: &CursorPosition) -> Result<(), anyhow::Error> {
+        self.stdout.queue(cursor::MoveTo(p.x, p.y))?;
+        Ok(())
+    }
 }
