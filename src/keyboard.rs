@@ -4,25 +4,12 @@ use anyhow::anyhow;
 use crossterm::event::{self, poll, Event, KeyEvent};
 use crossterm::event::{KeyCode, KeyModifiers};
 
-#[repr(u8)]
 pub enum Arrow {
-    Left = b'h',
-    Right = b'l',
-    Up = b'k',
-    Down = b'j',
+    Left,
+    Right,
+    Up,
+    Down,
 }
-
-// impl From<char> for Arrow {
-//     fn from(value: char) -> Self {
-//         match value {
-//             'h' => Self::Left,
-//             'l' => Self::Right,
-//             'k' => Self::Up,
-//             'j' => Self::Down,
-//             _ => Self::Left,
-//         }
-//     }
-// }
 
 impl TryFrom<char> for Arrow {
     type Error = anyhow::Error;
