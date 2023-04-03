@@ -9,14 +9,14 @@ use crossterm::{
 use crate::VERSION;
 
 #[derive(Debug, Default)]
-pub struct CursorPosition {
+pub struct Position {
     pub x: u16,
     pub y: u16,
 }
 
 pub struct Screen {
-    pub width: u16,
-    pub height: u16,
+    width: u16,
+    height: u16,
     stdout: io::Stdout,
 }
 
@@ -28,6 +28,12 @@ impl Screen {
             height,
             stdout: io::stdout(),
         })
+    }
+    pub fn bounds(&self) -> Position {
+        Position {
+            x: self.width,
+            y: self.height,
+        }
     }
     pub fn clear(&mut self) -> Result<(), anyhow::Error> {
         self.stdout
@@ -69,15 +75,15 @@ impl Screen {
         Ok(())
     }
 
-    pub fn get_cursor(&mut self) -> Result<CursorPosition, anyhow::Error> {
+    pub fn get_cursor(&mut self) -> Result<Position, anyhow::Error> {
         let position = cursor::position()?;
-        Ok(CursorPosition {
+        Ok(Position {
             x: position.0,
             y: position.1,
         })
     }
 
-    pub fn move_cursor(&mut self, p: &CursorPosition) -> Result<(), anyhow::Error> {
+    pub fn move_cursor(&mut self, p: &Position) -> Result<(), anyhow::Error> {
         self.stdout.queue(cursor::MoveTo(p.x, p.y))?;
         Ok(())
     }

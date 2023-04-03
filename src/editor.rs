@@ -2,12 +2,12 @@ use crossterm::event::{Event, KeyCode, KeyEvent};
 use crossterm::terminal;
 
 use crate::keyboard::{self, Arrow, Keyboard};
-use crate::screen::{CursorPosition, Screen};
+use crate::screen::{Position, Screen};
 
 pub struct Editor {
     screen: Screen,
     keyboard: Keyboard,
-    cursor: CursorPosition,
+    cursor: Position,
 }
 
 impl Editor {
@@ -18,7 +18,7 @@ impl Editor {
         Ok(Self {
             screen,
             keyboard: Keyboard {},
-            cursor: CursorPosition::default(),
+            cursor: Position::default(),
         })
     }
     pub fn refresh_screen(&mut self) -> Result<(), anyhow::Error> {
@@ -29,10 +29,11 @@ impl Editor {
         Ok(())
     }
     fn move_cursor(&mut self, key: Arrow) {
+        let position = self.screen.bounds();
         match key {
             Arrow::Left => self.cursor.x = self.cursor.x.saturating_sub(1),
             Arrow::Right => {
-                self.cursor.x += if self.cursor.x + 1 < self.screen.width {
+                self.cursor.x += if self.cursor.x < (position.x - 1) {
                     1
                 } else {
                     0
@@ -40,7 +41,7 @@ impl Editor {
             }
             Arrow::Up => self.cursor.y = self.cursor.y.saturating_sub(1),
             Arrow::Down => {
-                self.cursor.y += if self.cursor.y + 1 < self.screen.height {
+                self.cursor.y += if self.cursor.y < (position.y - 1) {
                     1
                 } else {
                     0
