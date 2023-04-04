@@ -8,6 +8,7 @@ pub struct Editor {
     screen: Screen,
     keyboard: Keyboard,
     cursor: Position,
+    rows: Vec<String>,
 }
 
 impl Editor {
@@ -19,11 +20,12 @@ impl Editor {
             screen,
             keyboard: Keyboard {},
             cursor: Position::default(),
+            rows: vec!["hello world!".to_owned()],
         })
     }
     pub fn refresh_screen(&mut self) -> Result<(), anyhow::Error> {
         self.screen.clear()?;
-        self.screen.draw_row()?;
+        self.screen.draw_row(&self.rows)?;
         self.screen.move_cursor(&self.cursor)?;
         self.screen.flush()?;
         Ok(())

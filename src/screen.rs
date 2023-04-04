@@ -42,7 +42,7 @@ impl Screen {
         Ok(())
     }
 
-    pub fn draw_row(&mut self) -> Result<(), anyhow::Error> {
+    pub fn draw_row(&mut self, rows: &[String]) -> Result<(), anyhow::Error> {
         let welcome = &|| -> String {
             let mut welcome = format!("Kilo editor -- version {}", VERSION);
             welcome.truncate(self.width as usize);
@@ -50,6 +50,13 @@ impl Screen {
         }();
 
         for row in 0..self.height {
+            if row < rows.len() as u16 {
+                let len = rows[0].len().min(self.width as usize);
+                self.stdout
+                    .queue(cursor::MoveTo(0, row))?
+                    .queue(Print(&rows[0][..len]))?;
+                continue;
+            }
             self.stdout
                 .queue(cursor::MoveTo(0, row))?
                 .queue(Print("~"))?;
