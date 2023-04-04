@@ -47,6 +47,10 @@ impl Editor {
                     0
                 }
             }
+            Arrow::Home => self.cursor.y = 0,
+            Arrow::End => self.cursor.y = position.y - 1,
+            Arrow::PageUp => self.cursor.x = 0,
+            Arrow::PageDown => self.cursor.x = position.x - 1,
         }
     }
 
@@ -54,8 +58,8 @@ impl Editor {
         loop {
             self.refresh_screen()?;
 
-            match self.keyboard.read()? {
-                Event::Key(ke) => match ke {
+            if let Event::Key(ke) = self.keyboard.read()? {
+                match ke {
                     KeyEvent {
                         code: KeyCode::Char(c),
                         modifiers: _,
@@ -63,22 +67,23 @@ impl Editor {
                         state: _,
                     } => match c {
                         'h' | 'l' | 'k' | 'j' => self.move_cursor(c.try_into()?),
-                        _ if keyboard::is_ctrl(&ke, 'q') => {
+                        'q' if keyboard::is_ctrl(&ke, 'q') => {
                             break;
                         }
                         _ => {}
                     },
-                    KeyEvent { code, .. }
-                        if code == KeyCode::Left
-                            || code == KeyCode::Right
-                            || code == KeyCode::Up
-                            || code == KeyCode::Down =>
-                    {
-                        self.move_cursor(code.try_into()?)
-                    }
-                    _ => {}
-                },
-                _ => {}
+                    KeyEvent { code, .. } => match code {
+                        KeyCode::Left
+                        | KeyCode::Right
+                        | KeyCode::Up
+                        | KeyCode::Down
+                        | KeyCode::Home
+                        | KeyCode::End
+                        | KeyCode::PageUp
+                        | KeyCode::PageDown => self.move_cursor(code.try_into()?),
+                        _ => {}
+                    },
+                }
             }
         }
         Ok(())

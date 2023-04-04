@@ -9,6 +9,10 @@ pub enum Arrow {
     Right,
     Up,
     Down,
+    Home,
+    End,
+    PageUp,
+    PageDown,
 }
 
 impl TryFrom<char> for Arrow {
@@ -33,6 +37,10 @@ impl TryFrom<KeyCode> for Arrow {
             KeyCode::Right => Ok(Self::Right),
             KeyCode::Up => Ok(Self::Up),
             KeyCode::Down => Ok(Self::Down),
+            KeyCode::Home => Ok(Self::Home),
+            KeyCode::End => Ok(Self::End),
+            KeyCode::PageUp => Ok(Self::PageUp),
+            KeyCode::PageDown => Ok(Self::PageDown),
             _ => Err(anyhow!("not supported arrow KeyCode")),
         }
     }
