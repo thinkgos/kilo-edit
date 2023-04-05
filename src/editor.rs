@@ -1,3 +1,6 @@
+use std::fs;
+use std::path::Path;
+
 use crossterm::event::{Event, KeyCode, KeyEvent};
 use crossterm::terminal;
 
@@ -13,6 +16,17 @@ pub struct Editor {
 
 impl Editor {
     pub fn new() -> Result<Editor, anyhow::Error> {
+        Self::build(&[])
+    }
+    pub fn with_file<P: AsRef<Path>>(path: P) -> Result<Self, anyhow::Error> {
+        let lines: Vec<String> = fs::read_to_string(path)?
+            .split('\n')
+            .map(|x| x.to_string())
+            .collect();
+        Self::build(&lines)
+    }
+
+    pub fn build(data: &[String]) -> Result<Self, anyhow::Error> {
         let screen = Screen::new()?;
 
         terminal::enable_raw_mode()?;
@@ -20,9 +34,10 @@ impl Editor {
             screen,
             keyboard: Keyboard {},
             cursor: Position::default(),
-            rows: vec!["hello world!".to_owned()],
+            rows: data.into(),
         })
     }
+
     pub fn refresh_screen(&mut self) -> Result<(), anyhow::Error> {
         self.screen.clear()?;
         self.screen.draw_row(&self.rows)?;

@@ -29,19 +29,22 @@ impl Screen {
             stdout: io::stdout(),
         })
     }
+
+    /// 获取屏幕大小限制
     pub fn bounds(&self) -> Position {
         Position {
             x: self.width,
             y: self.height,
         }
     }
+    // 清屏
     pub fn clear(&mut self) -> Result<(), anyhow::Error> {
         self.stdout
             .queue(terminal::Clear(terminal::ClearType::All))?
             .queue(cursor::MoveTo(0, 0))?;
         Ok(())
     }
-
+    // 显示屏
     pub fn draw_row(&mut self, rows: &[String]) -> Result<(), anyhow::Error> {
         let welcome = &|| -> String {
             let mut welcome = format!("Kilo editor -- version {}", VERSION);
@@ -51,17 +54,17 @@ impl Screen {
 
         for row in 0..self.height {
             if row < rows.len() as u16 {
-                let len = rows[0].len().min(self.width as usize);
+                let len = rows[row as usize].len().min(self.width as usize);
                 self.stdout
                     .queue(cursor::MoveTo(0, row))?
-                    .queue(Print(&rows[0][..len]))?;
+                    .queue(Print(&rows[row as usize][..len]))?;
                 continue;
             }
             self.stdout
                 .queue(cursor::MoveTo(0, row))?
                 .queue(Print("~"))?;
 
-            if row == self.height / 3 {
+            if rows.is_empty() && row == self.height / 3 {
                 // 输出欢迎
                 let column = if welcome.len() < self.width as usize {
                     ((self.width as usize - welcome.len()) / 2) as u16
@@ -76,7 +79,7 @@ impl Screen {
         self.stdout.queue(cursor::MoveTo(0, 0))?;
         Ok(())
     }
-
+    // 刷至输出
     pub fn flush(&mut self) -> Result<(), anyhow::Error> {
         self.stdout.flush()?;
         Ok(())
@@ -89,7 +92,6 @@ impl Screen {
             y: position.1,
         })
     }
-
     pub fn move_cursor(&mut self, p: &Position) -> Result<(), anyhow::Error> {
         self.stdout.queue(cursor::MoveTo(p.x, p.y))?;
         Ok(())
